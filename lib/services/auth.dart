@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:lets_talk/helperfunctions/sharedpref_helper.dart';
 
 class AuthMethods{
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -26,7 +27,13 @@ class AuthMethods{
 
     User userDetails = result.user;
 
-    if(result!=Null){}
+    if(result!=Null){
+      SharedPreferenceHelper().saveUserEmail(userDetails.email);
+      SharedPreferenceHelper().saveUserId(userDetails.uid);
+      SharedPreferenceHelper().saveUserName(userDetails.email.replaceAll("@gmail.com", ""));
+      SharedPreferenceHelper().saveDisplayName(userDetails.displayName);
+      SharedPreferenceHelper().saveUserProfileUrl(userDetails.photoURL);
+    }
 
   }
 }

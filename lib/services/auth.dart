@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lets_talk/helperfunctions/sharedpref_helper.dart';
+import 'package:lets_talk/screens/home.dart';
+import 'package:lets_talk/services/database.dart';
 
 class AuthMethods{
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -33,6 +36,19 @@ class AuthMethods{
       SharedPreferenceHelper().saveUserName(userDetails.email.replaceAll("@gmail.com", ""));
       SharedPreferenceHelper().saveDisplayName(userDetails.displayName);
       SharedPreferenceHelper().saveUserProfileUrl(userDetails.photoURL);
+
+      Map<String, dynamic> userInfoMap = {
+        "email": userDetails.email,
+        "username": userDetails.email.replaceAll("@gmaail.com", ""),
+        "name": userDetails.displayName,
+        "imageUrl": userDetails.photoURL,
+      };
+
+      DataBaseMethods().addUserInfoToDB(userDetails.uid, userInfoMap).then(
+              (value) => {
+                Navigator.pushReplacement(context, MaterialPageRoute(
+                    builder: (context)=> Home()))
+              });
     }
 
   }

@@ -10,6 +10,10 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  bool isSearching = false;
+  TextEditingController searchUsernameEditingController=TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,6 +33,61 @@ class _HomeState extends State<Home> {
                 child: Icon(Icons.exit_to_app)),
           )
         ],
+      ),
+      body: Container(
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                isSearching ? GestureDetector(
+                  onTap: (){
+                    isSearching =false;
+                    searchUsernameEditingController.text="";
+                    setState(() {});
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Icon(Icons.arrow_back),
+                  ),
+                ):Container(),
+                Expanded(
+                  child: Container(
+                    margin:  EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: Colors.black87,
+                          width: 1.4,
+                          style: BorderStyle.solid,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: TextField(
+                              controller: searchUsernameEditingController,
+                            decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Username",
+                          ),
+                        )),
+                        GestureDetector(
+                            onTap: (){
+                              isSearching =true;
+                              setState(() {});
+                            },
+                            child: Icon(Icons.search)
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
       ),
     );
   }

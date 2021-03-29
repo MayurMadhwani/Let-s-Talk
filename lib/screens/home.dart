@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lets_talk/constants.dart';
 import 'package:lets_talk/screens/signin.dart';
 import 'package:lets_talk/services/auth.dart';
+import 'package:lets_talk/services/database.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -12,7 +14,29 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
 
   bool isSearching = false;
+  Stream usersStream;
   TextEditingController searchUsernameEditingController=TextEditingController();
+
+  onSearchBtnClick()async{
+    isSearching =true;
+    setState(() {});
+    usersStream = await DataBaseMethods().getUserByUserName(searchUsernameEditingController.text);
+  }
+
+  Widget searchUsersList(){
+    return StreamBuilder(
+      stream: usersStream,
+    builder: (context, snapshot) {
+      return ListView.builder(
+        itemCount: snapshot.data.documents.length,
+        itemBuilder: (context, index) {
+          DocumentSnapshot ds = snapshot.data.documents[index];
+          return Image.network(ds["imgUrl"]);
+        },
+       );
+      },
+     );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +99,9 @@ class _HomeState extends State<Home> {
                         )),
                         GestureDetector(
                             onTap: (){
-                              isSearching =true;
-                              setState(() {});
+                              if(searchUsernameEditingController.text!=""){
+                                onSearchBtnClick();
+                              }
                             },
                             child: Icon(Icons.search)
                         ),

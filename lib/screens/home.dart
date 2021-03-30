@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lets_talk/constants.dart';
+import 'package:lets_talk/screens/chatscreen.dart';
 import 'package:lets_talk/screens/signin.dart';
 import 'package:lets_talk/services/auth.dart';
 import 'package:lets_talk/services/database.dart';
@@ -21,21 +22,56 @@ class _HomeState extends State<Home> {
     isSearching =true;
     setState(() {});
     usersStream = await DataBaseMethods().getUserByUserName(searchUsernameEditingController.text);
+    setState(() {});
+  }
+
+  Widget searchListUserTile({String profileUrl, name, username, email}){
+    return GestureDetector(
+      onTap: (){
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context)=>ChatScreen(
+              username,name
+            )));
+      },
+      child: Row(
+        children: [
+          ClipRRect(
+              borderRadius: BorderRadius.circular(40),
+              child: Image.network(profileUrl,height: 40,width: 40,)),
+          SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [Text(name), Text(email),]
+          ),
+        ],
+      ),
+    );
   }
 
   Widget searchUsersList(){
     return StreamBuilder(
       stream: usersStream,
     builder: (context, snapshot) {
-      return ListView.builder(
-        itemCount: snapshot.data.documents.length,
+      return snapshot.hasData ? ListView.builder(
+        itemCount: snapshot.data.docs.length,
+        shrinkWrap: true,
         itemBuilder: (context, index) {
-          DocumentSnapshot ds = snapshot.data.documents[index];
-          return Image.network(ds["imgUrl"]);
+            DocumentSnapshot ds = snapshot.data.docs[index];
+          return searchListUserTile(
+              profileUrl: ds["imageUrl"],
+              name:ds["name"],
+              email:ds["email"],
+              username:ds["username"],
+              );
         },
-       );
+       ) : Center(child: CircularProgressIndicator(),);
       },
      );
+  }
+
+
+  Widget chatRoomsList(){
+    return Container();
   }
 
   @override
@@ -110,7 +146,8 @@ class _HomeState extends State<Home> {
                   ),
                 ),
               ],
-            )
+            ),
+            isSearching ? searchUsersList():chatRoomsList(),
           ],
         ),
       ),

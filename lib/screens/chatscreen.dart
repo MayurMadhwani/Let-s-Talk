@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lets_talk/helperfunctions/sharedpref_helper.dart';
+import 'package:lets_talk/services/database.dart';
+import 'package:random_string/random_string.dart';
 
 class ChatScreen extends StatefulWidget {
 
@@ -15,6 +17,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   String chatRoomId, messageId = "";
   String myName, myProfilePic, myUserName, myEmail;
+  TextEditingController messageTextEditingController = TextEditingController();
 
   getMyInfoFromSharedPreference()async{
     myName = await SharedPreferenceHelper().getDisplayName();
@@ -33,8 +36,40 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  addMessage(){
+  addMessage(bool sendClicked){
+    if(messageTextEditingController.text!=""){
+        String message = messageTextEditingController.text;
+        // messageTextEditingController.text =
+      var lastMessageTs = DateTime.now();
+      Map<String, dynamic> messageInfoMap = {
+        "message" : message,
+        "sendBy" : myUserName,
+        "ts" : lastMessageTs,
+        "imageUrl" : myProfilePic,
+      };
+      //messageId
+      if(messageId == ""){
+        messageId = randomAlphaNumeric(12);
+      }
 
+      DataBaseMethods().addMessage(chatRoomId, messageId, messageInfoMap)
+      .then((value){
+        Map<String,dynamic> lastMessageInfoMap = {
+          "lastMessage" : message,
+          "lastMessageSendTs" : lastMessageTs,
+          "lastMessageSendBy" : myUserName,
+      };
+
+      DataBaseMethods().updateLastMessageSend(chatRoomId, lastMessageInfoMap);
+
+      if(sendClicked){
+        //remove the text in the message i/p field
+        messageTextEditingController.text = "";
+        //make message id blank
+        messageId = "";
+      }
+      });
+    }
   }
 
   getAndSetMessages()async{}
@@ -76,6 +111,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 16,vertical: 2),
                   child: Row(children: [
                     Expanded(child: TextField(
+                      controller: messageTextEditingController,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "Type a message",

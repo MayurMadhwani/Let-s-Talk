@@ -25,5 +25,29 @@ class DataBaseMethods{
         .update(lastMessageInfoMap);
   }
 
+  createChatRoom(String chatRoomId,Map chatRoomInfoMap)async{
+    final snapShot = await FirebaseFirestore.instance
+    .collection("chatrooms")
+    .doc(chatRoomId)
+    .get();
+    if(snapShot.exists){
+      //chatroom already exist
+      return true;
+    }else{
+      //chatrooom does not exists
+      return FirebaseFirestore.instance
+      .collection("chatrooms")
+      .doc(chatRoomId)
+      .set(chatRoomInfoMap);
+    }
+  }
 
+  Future<Stream<QuerySnapshot>> getChatRoomMessages(chatRoomId)async{
+    return FirebaseFirestore.instance
+        .collection("chatrooms")
+        .doc(chatRoomId)
+        .collection("chats")
+        .orderBy("ts", descending: true)
+        .snapshots();
+  }
 }

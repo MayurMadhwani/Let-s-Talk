@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lets_talk/constants.dart';
+import 'package:lets_talk/helperfunctions/sharedpref_helper.dart';
 import 'package:lets_talk/screens/chatscreen.dart';
 import 'package:lets_talk/screens/signin.dart';
 import 'package:lets_talk/services/auth.dart';
@@ -15,8 +16,25 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
 
   bool isSearching = false;
+  String myName, myProfilePic, myUserName, myEmail;
   Stream usersStream;
   TextEditingController searchUsernameEditingController=TextEditingController();
+
+  getMyInfoFromSharedPreference()async{
+    myName = await SharedPreferenceHelper().getDisplayName();
+    myProfilePic = await SharedPreferenceHelper().getUserProfileUrl();
+    myUserName = await SharedPreferenceHelper().getUserName();
+    myEmail = await SharedPreferenceHelper().getUserEmail();
+  }
+
+  getChatRoomIdByUsernames(String a, String b){
+    if(a.substring(0,1).codeUnitAt(0)>b.substring(0,1).codeUnitAt(0)){
+      return "$b\_$a";
+    }else{
+      return "$a\_$b";
+    }
+  }
+
 
   onSearchBtnClick()async{
     isSearching =true;
@@ -28,6 +46,13 @@ class _HomeState extends State<Home> {
   Widget searchListUserTile({String profileUrl, name, username, email}){
     return GestureDetector(
       onTap: (){
+        var chatRoomId = getChatRoomIdByUsernames(myUserName, username);
+        Map<String, dynamic> chatRoomInfoMap={
+          "users" : [myUserName, username],
+        };
+        
+        DataBaseMethods().createChatRoom(chatRoomId, chatRoomInfoMap);
+        
         Navigator.push(context,
             MaterialPageRoute(builder: (context)=>ChatScreen(
               username,name
@@ -72,6 +97,12 @@ class _HomeState extends State<Home> {
 
   Widget chatRoomsList(){
     return Container();
+  }
+
+  @override
+  void initState() {
+    getMyInfoFromSharedPreference();
+    super.initState();
   }
 
   @override

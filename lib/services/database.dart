@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lets_talk/helperfunctions/sharedpref_helper.dart';
 
 class DataBaseMethods{
   Future addUserInfoToDB(String userId, Map<String, dynamic> userInfoMap)async{
@@ -50,4 +51,20 @@ class DataBaseMethods{
         .orderBy("ts", descending: true)
         .snapshots();
   }
+
+  Future<Stream<QuerySnapshot>>getChatRooms()async{
+    String myUsername = await SharedPreferenceHelper().getUserName();
+    return FirebaseFirestore.instance
+        .collection("chatrooms")
+        .orderBy("lastMessageSendTs",descending: true)
+        .where("users",arrayContains: myUsername)
+        .snapshots();
+  }
+
+  Future<QuerySnapshot> gerUserInfo(String username)async{
+    return await FirebaseFirestore.instance.collection("users")
+        .where("username",isEqualTo: username)
+        .get();
+  }
+
 }
